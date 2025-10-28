@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 public class TodoRepositoryImpl implements TodoRepository {
 
     private final DynamoDbTable<DTodo> table;
+    private static final String TODO_TABLE = System.getenv("TODO_TABLE_NAME");
 
     public TodoRepositoryImpl(){
         DynamoDbClient dynamoDbClient = DynamoDbClient.builder()
@@ -21,7 +22,7 @@ public class TodoRepositoryImpl implements TodoRepository {
                 .dynamoDbClient(dynamoDbClient)
                 .build();
 
-        this.table =enhancedClient.table("DTodo", TableSchema.fromBean(DTodo.class));
+        this.table =enhancedClient.table(TODO_TABLE, TableSchema.fromBean(DTodo.class));
     }
 
     @Override

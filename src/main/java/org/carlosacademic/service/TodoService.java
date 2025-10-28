@@ -17,6 +17,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final ObjectMapper objectMapper;
+    private static final String API_URL = System.getenv("TODO_API_URL");
 
     public TodoService() {
         objectMapper = new ObjectMapper();
@@ -26,7 +27,7 @@ public class TodoService {
     public String createTodo(String id){
         try (HttpClient client = HttpClient.newHttpClient()){
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create("https://jsonplaceholder.typicode.com/todos/"+id))
+                    .uri(URI.create(API_URL +"/todos/"+id))
                     .GET()
                     .build();
 
