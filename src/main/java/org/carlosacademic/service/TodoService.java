@@ -26,7 +26,7 @@ public class TodoService {
         todoRepository = new TodoRepositoryImpl();
     }
 
-    public String createTodo(String id, LambdaLogger logger){
+    public TodoDTO createTodo(String id, LambdaLogger logger){
         this.logger = logger;
         try (HttpClient client = HttpClient.newHttpClient()){
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -39,15 +39,16 @@ public class TodoService {
             if(response.statusCode() == 200 && response.body()!=null){
                 return register(response.body());
             }else{
-                return response.statusCode()+"";
+                logger.log("Failed creating todo whith status code: "+ response.statusCode());
+                return null;
             }
         }catch (Exception e){
             logger.log("Error creating the todo "+ e.getMessage());
         }
-        return "Not created";
+        return null;
     }
 
-    public String register(String todo){
+    public TodoDTO register(String todo){
         if (!todo.isEmpty()){
             try{
                 logger.log("Todo string to register: "+ todo);
@@ -55,11 +56,11 @@ public class TodoService {
                 DTodo dTodo = TodoMapper.toDTodo(t);
                 logger.log("Table created: "+ dTodo);
                 todoRepository.save(dTodo);
-                return todo;
+                return TodoMapper.toTodoDto(dTodo);
             } catch (JsonProcessingException e) {
                 logger.log("Error parsing json "+ e.getMessage());
             }
         }
-        return "Not found";
+        return null;
     }
 }

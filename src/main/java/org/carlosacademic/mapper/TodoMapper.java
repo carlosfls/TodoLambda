@@ -13,4 +13,12 @@ public class TodoMapper {
         dTodo.setCompleted(todoDTO.completed());
         return dTodo;
     }
+
+    public static TodoDTO toTodoDto(DTodo dTodo){
+        return new TodoDTO(
+                dTodo.getUserId(),
+                dTodo.getId(),
+                dTodo.getTitle(),
+                dTodo.isCompleted());
+    }
 }
