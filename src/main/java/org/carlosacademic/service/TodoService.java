@@ -1,5 +1,6 @@
 package org.carlosacademic.service;
 
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.carlosacademic.domain.TodoDTO;
@@ -18,13 +19,15 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final ObjectMapper objectMapper;
     private static final String API_URL = System.getenv("TODO_API_URL");
+    private LambdaLogger logger;
 
     public TodoService() {
         objectMapper = new ObjectMapper();
         todoRepository = new TodoRepositoryImpl();
     }
 
-    public String createTodo(String id){
+    public String createTodo(String id, LambdaLogger logger){
+        this.logger = logger;
         try (HttpClient client = HttpClient.newHttpClient()){
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(API_URL +"/todos/"+id))
@@ -39,19 +42,22 @@ public class TodoService {
                 return response.statusCode()+"";
             }
         }catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            logger.log("Error creating the todo "+ e.getMessage());
         }
+        return "Not created";
     }
 
     public String register(String todo){
         if (!todo.isEmpty()){
             try{
+                logger.log("Todo string to register: "+ todo);
                 TodoDTO t = objectMapper.readValue(todo, TodoDTO.class);
                 DTodo dTodo = TodoMapper.toDTodo(t);
+                logger.log("Table created: "+ dTodo);
                 todoRepository.save(dTodo);
                 return todo;
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
+                logger.log("Error parsing json "+ e.getMessage());
             }
         }
         return "Not found";

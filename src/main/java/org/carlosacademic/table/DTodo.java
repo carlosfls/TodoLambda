@@ -7,14 +7,19 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 @DynamoDbBean
 public class DTodo {
 
+    private int userId;
     private int id;
     private String title;
     private boolean completed;
-    private int userId;
 
     @DynamoDbPartitionKey
     public int getId() {
         return id;
+    }
+
+    @DynamoDbAttribute("user_id")
+    public int getUserId() {
+        return userId;
     }
 
     public void setId(int id) {
@@ -39,12 +44,17 @@ public class DTodo {
         this.completed = completed;
     }
 
-    @DynamoDbAttribute("user_id")
-    public int getUserId() {
-        return userId;
-    }
-
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public String toString() {
+        return "DTodo{" +
+                "userId=" + userId +
+                ", id=" + id +
+                ", title='" + title + '\'' +
+                ", completed=" + completed +
+                '}';
     }
 }

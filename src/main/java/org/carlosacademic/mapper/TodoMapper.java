@@ -7,10 +7,10 @@ public class TodoMapper {
 
     public static DTodo toDTodo(TodoDTO todoDTO){
         DTodo dTodo = new DTodo();
+        dTodo.setUserId(todoDTO.userId());
         dTodo.setId(todoDTO.id());
         dTodo.setTitle(todoDTO.title());
         dTodo.setCompleted(todoDTO.completed());
-        dTodo.setUserId(todoDTO.userId());
         return dTodo;
     }
 }
