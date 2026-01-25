@@ -2,11 +2,10 @@ package org.carlosacademic;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import org.carlosacademic.domain.CreateTodo;
 import org.carlosacademic.domain.TodoDTO;
 import org.carlosacademic.service.TodoService;
 
-public class TodoLambdaRegister implements RequestHandler<CreateTodo, TodoDTO> {
+public class TodoLambdaRegister implements RequestHandler<TodoDTO, TodoDTO> {
 
     private final TodoService todoService;
 
@@ -15,7 +14,7 @@ public class TodoLambdaRegister implements RequestHandler<CreateTodo, TodoDTO> {
     }
 
     @Override
-    public TodoDTO handleRequest(CreateTodo event, Context context) {
-        return todoService.createTodo(event.getId(), context.getLogger());
+    public TodoDTO handleRequest(TodoDTO event, Context context) {
+        return todoService.register(event, context);
     }
 }
