@@ -25,7 +25,7 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, TodoDTO> {
             try {
                 logger.log("Receiving the event: " + message.getBody());
                 TodoDTO todoDTO = objectMapper.readValue(message.getBody(), TodoDTO.class);
-                return todoService.register(todoDTO, context);
+                return todoService.register(todoDTO, logger);
             }catch (Exception e){
                 logger.log("Error processing the message: " + message.getBody());
             }

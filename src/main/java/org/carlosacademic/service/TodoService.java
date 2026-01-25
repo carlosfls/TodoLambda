@@ -1,6 +1,5 @@
 package org.carlosacademic.service;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import org.carlosacademic.domain.TodoDTO;
 import org.carlosacademic.mapper.TodoMapper;
@@ -17,8 +16,7 @@ public class TodoService {
 
     }
 
-    public TodoDTO register(TodoDTO todo, Context context){
-        LambdaLogger logger = context.getLogger();
+    public TodoDTO register(TodoDTO todo, LambdaLogger logger){
         if (todo != null){
             DTodo dTodo = TodoMapper.toDTodo(todo);
             todoRepository.save(dTodo);
