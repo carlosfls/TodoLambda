@@ -24,7 +24,6 @@ public class TodoService {
             todoRepository.save(dTodo);
             logger.log("Todo saved successfully");
             return TodoMapper.toTodoDto(dTodo);
-
         }
         logger.log("Cannot save the todo");
         return null;
