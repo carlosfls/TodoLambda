@@ -4,15 +4,14 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import org.carlosacademic.domain.TodoDTO;
 import org.carlosacademic.mapper.TodoMapper;
 import org.carlosacademic.repositories.TodoRepository;
-import org.carlosacademic.repositories.impl.TodoRepositoryImpl;
 import org.carlosacademic.table.DTodo;
 
 public class TodoService {
 
     private final TodoRepository todoRepository;
 
-    public TodoService() {
-        todoRepository = new TodoRepositoryImpl();
+    public TodoService(TodoRepository todoRepository) {
+        this.todoRepository = todoRepository;
 
     }
 

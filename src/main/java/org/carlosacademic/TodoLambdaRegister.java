@@ -5,17 +5,21 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.carlosacademic.config.DynamoConfig;
 import org.carlosacademic.domain.TodoDTO;
+import org.carlosacademic.repositories.TodoRepository;
+import org.carlosacademic.repositories.impl.TodoRepositoryImpl;
 import org.carlosacademic.service.TodoService;
 
 public class TodoLambdaRegister implements RequestHandler<SQSEvent, TodoDTO> {
 
+    private static final String TODO_TABLE = System.getenv("TODO_TABLE_NAME");
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final TodoService todoService;
-    private final ObjectMapper objectMapper;
 
     public TodoLambdaRegister() {
-        todoService = new TodoService();
-        objectMapper = new ObjectMapper();
+        TodoRepository todoRepository = new TodoRepositoryImpl(DynamoConfig.getEnhancedClient(), TODO_TABLE);
+        todoService = new TodoService(todoRepository);
     }
 
     @Override
