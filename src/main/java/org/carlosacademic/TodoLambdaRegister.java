@@ -1,7 +1,6 @@
 package org.carlosacademic;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,8 +9,12 @@ import org.carlosacademic.domain.TodoDTO;
 import org.carlosacademic.repositories.TodoRepository;
 import org.carlosacademic.repositories.impl.TodoRepositoryImpl;
 import org.carlosacademic.service.TodoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TodoLambdaRegister implements RequestHandler<SQSEvent, TodoDTO> {
+
+    private static final Logger logger = LoggerFactory.getLogger(TodoLambdaRegister.class);
 
     private static final String TODO_TABLE = System.getenv("TODO_TABLE_NAME");
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -24,14 +27,14 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, TodoDTO> {
 
     @Override
     public TodoDTO handleRequest(SQSEvent event, Context context) {
-        LambdaLogger logger = context.getLogger();
+        logger.info("Request id: {}", context.getAwsRequestId());
         for (SQSEvent.SQSMessage message : event.getRecords()){
             try {
-                logger.log("Receiving the event: " + message.getBody());
+                logger.info("Receiving the event: {}", message.getBody());
                 TodoDTO todoDTO = objectMapper.readValue(message.getBody(), TodoDTO.class);
                 return todoService.register(todoDTO, logger);
             }catch (Exception e){
-                logger.log("Error processing the message: " + message.getBody());
+                logger.error("Error processing the message: {}", message.getBody());
             }
         }
         return null;

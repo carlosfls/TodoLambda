@@ -1,10 +1,10 @@
 package org.carlosacademic.service;
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import org.carlosacademic.domain.TodoDTO;
 import org.carlosacademic.mapper.TodoMapper;
 import org.carlosacademic.repositories.TodoRepository;
 import org.carlosacademic.table.DTodo;
+import org.slf4j.Logger;
 
 public class TodoService {
 
@@ -15,14 +15,14 @@ public class TodoService {
 
     }
 
-    public TodoDTO register(TodoDTO todo, LambdaLogger logger){
+    public TodoDTO register(TodoDTO todo, Logger logger){
         if (todo != null){
             DTodo dTodo = TodoMapper.toDTodo(todo);
             todoRepository.save(dTodo);
-            logger.log("Todo saved successfully");
+            logger.info("Todo saved successfully");
             return TodoMapper.toTodoDto(dTodo);
         }
-        logger.log("Cannot save the todo");
+        logger.warn("Cannot save the todo");
         return null;
     }
 }
