@@ -2,17 +2,23 @@ package org.carlosacademic;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.carlosacademic.config.DynamoConfig;
 import org.carlosacademic.domain.TodoDTO;
+import org.carlosacademic.domain.exceptions.InvalidMessageException;
 import org.carlosacademic.repositories.TodoRepository;
 import org.carlosacademic.repositories.impl.TodoRepositoryImpl;
 import org.carlosacademic.service.TodoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TodoLambdaRegister implements RequestHandler<SQSEvent, TodoDTO> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
     private static final Logger logger = LoggerFactory.getLogger(TodoLambdaRegister.class);
 
@@ -26,17 +32,32 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, TodoDTO> {
     }
 
     @Override
-    public TodoDTO handleRequest(SQSEvent event, Context context) {
+    public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
+
+        List<SQSBatchResponse.BatchItemFailure> failedMessages = new ArrayList<>();
+
         logger.info("Request id: {}", context.getAwsRequestId());
         for (SQSEvent.SQSMessage message : event.getRecords()){
             try {
-                logger.info("Receiving the event: {}", message.getBody());
-                TodoDTO todoDTO = objectMapper.readValue(message.getBody(), TodoDTO.class);
-                return todoService.register(todoDTO, logger);
+                TodoDTO todoDTO = getTodoDtoFromMessage(message);
+                todoService.register(todoDTO, logger);
+            }catch (InvalidMessageException e){
+                logger.error("Invalid Message: {}", e.getMessage());
             }catch (Exception e){
-                logger.error("Error processing the message: {}", message.getBody());
+                logger.error("Error processing the message: {}", e.getMessage());
+                failedMessages.add(new SQSBatchResponse.
+                        BatchItemFailure(message.getMessageId())
+                );
             }
         }
-        return null;
+        return new SQSBatchResponse(failedMessages);
+    }
+
+    private TodoDTO getTodoDtoFromMessage(SQSEvent.SQSMessage message) {
+        try {
+            return objectMapper.readValue(message.getBody(), TodoDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new InvalidMessageException("Invalid Json: " + message.getBody());
+        }
     }
 }
