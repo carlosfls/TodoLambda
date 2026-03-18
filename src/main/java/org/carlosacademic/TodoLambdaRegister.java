@@ -33,18 +33,23 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResp
 
     @Override
     public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
-
         List<SQSBatchResponse.BatchItemFailure> failedMessages = new ArrayList<>();
+        String correlationId = "";
 
-        logger.info("Request id: {}", context.getAwsRequestId());
         for (SQSEvent.SQSMessage message : event.getRecords()){
             try {
+                correlationId = message.getMessageAttributes()
+                        .get("correlationId")
+                        .getStringValue();
+
                 TodoDTO todoDTO = getTodoDtoFromMessage(message);
-                todoService.register(todoDTO, logger);
+
+                todoService.register(todoDTO, logger, correlationId);
+
             }catch (InvalidMessageException e){
-                logger.error("Invalid Message: {}", e.getMessage());
+                logger.error("Invalid Message={} requestId={}", e.getMessage(), correlationId);
             }catch (Exception e){
-                logger.error("Error processing the message: {}", e.getMessage());
+                logger.error("Error processing the message={} requestId={}", e.getMessage(),  correlationId);
                 failedMessages.add(new SQSBatchResponse.
                         BatchItemFailure(message.getMessageId())
                 );

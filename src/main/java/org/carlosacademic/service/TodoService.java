@@ -15,14 +15,14 @@ public class TodoService {
 
     }
 
-    public TodoDTO register(TodoDTO todo, Logger logger){
+    public void register(TodoDTO todo, Logger logger, String correlationId) {
         if (todo != null){
+            logger.info("EVENT=SAVE_TODO todoId={} requestId={}", todo.id(), correlationId);
             DTodo dTodo = TodoMapper.toDTodo(todo);
             todoRepository.save(dTodo);
-            logger.info("Todo saved successfully");
-            return TodoMapper.toTodoDto(dTodo);
+            logger.info("EVENT=SAVE_TODO STATUS=SUCCESS requestId={}", correlationId);
+            return;
         }
-        logger.warn("Cannot save the todo");
-        return null;
+        logger.info("EVENT=SAVE_TODO STATUS=ERROR requestId={}", correlationId);
     }
 }
