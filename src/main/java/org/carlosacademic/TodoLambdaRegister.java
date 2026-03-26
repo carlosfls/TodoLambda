@@ -1,6 +1,7 @@
 package org.carlosacademic;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
@@ -12,15 +13,11 @@ import org.carlosacademic.domain.exceptions.InvalidMessageException;
 import org.carlosacademic.repositories.TodoRepository;
 import org.carlosacademic.repositories.impl.TodoRepositoryImpl;
 import org.carlosacademic.service.TodoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResponse> {
-
-    private static final Logger logger = LoggerFactory.getLogger(TodoLambdaRegister.class);
 
     private static final String TODO_TABLE = System.getenv("TODO_TABLE_NAME");
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -35,6 +32,7 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResp
     public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
         List<SQSBatchResponse.BatchItemFailure> failedMessages = new ArrayList<>();
         String correlationId = "";
+        LambdaLogger logger = context.getLogger();
 
         for (SQSEvent.SQSMessage message : event.getRecords()){
             try {
@@ -42,14 +40,15 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResp
                         .get("correlationId")
                         .getStringValue();
 
+                logger.log("Converting the message into TodoDto");
                 TodoDTO todoDTO = getTodoDtoFromMessage(message);
 
+                logger.log("Saving the TodoDto");
                 todoService.register(todoDTO, logger, correlationId);
-
             }catch (InvalidMessageException e){
-                logger.error("Invalid Message={} requestId={}", e.getMessage(), correlationId);
+                logger.log("Invalid Message: " + e.getMessage() + " RequestId: " + correlationId);
             }catch (Exception e){
-                logger.error("Error processing the message={} requestId={}", e.getMessage(),  correlationId);
+                logger.log("Unexpected Error: " + e.getMessage()+ " RequestId: " + correlationId);
                 failedMessages.add(new SQSBatchResponse.
                         BatchItemFailure(message.getMessageId())
                 );

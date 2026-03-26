@@ -1,10 +1,11 @@
 package org.carlosacademic.service;
 
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import org.carlosacademic.domain.TodoDTO;
+import org.carlosacademic.domain.exceptions.InvalidMessageException;
 import org.carlosacademic.mapper.TodoMapper;
 import org.carlosacademic.repositories.TodoRepository;
 import org.carlosacademic.table.DTodo;
-import org.slf4j.Logger;
 
 public class TodoService {
 
@@ -15,14 +16,13 @@ public class TodoService {
 
     }
 
-    public void register(TodoDTO todo, Logger logger, String correlationId) {
+    public void register(TodoDTO todo, LambdaLogger logger, String correlationId) {
         if (todo != null){
-            logger.info("EVENT=SAVE_TODO todoId={} requestId={}", todo.id(), correlationId);
             DTodo dTodo = TodoMapper.toDTodo(todo);
             todoRepository.save(dTodo);
-            logger.info("EVENT=SAVE_TODO STATUS=SUCCESS requestId={}", correlationId);
             return;
         }
-        logger.info("EVENT=SAVE_TODO STATUS=ERROR requestId={}", correlationId);
+        logger.log("TodoDTO is null RequestId: " + correlationId);
+        throw new InvalidMessageException("TodoDTO is null");
     }
 }
