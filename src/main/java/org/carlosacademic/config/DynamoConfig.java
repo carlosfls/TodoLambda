@@ -8,7 +8,7 @@ public class DynamoConfig {
 
     private static final DynamoDbClient dynamoDbClient =
             DynamoDbClient.builder()
-                    .region(Region.US_EAST_1)
+                    .region(Region.SA_EAST_1)
                     .build();
 
     private static final DynamoDbEnhancedClient enhancedClient =
