@@ -19,7 +19,7 @@ public class TodoService {
     public void register(TodoDTO todo, LambdaLogger logger, String correlationId) {
         if (todo != null){
             DTodo dTodo = TodoMapper.toDTodo(todo);
-            todoRepository.save(dTodo);
+            todoRepository.saveIfNotExist(dTodo, logger);
             return;
         }
         logger.log("TodoDTO is null RequestId: " + correlationId);
