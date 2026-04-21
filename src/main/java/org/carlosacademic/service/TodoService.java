@@ -16,13 +16,12 @@ public class TodoService {
 
     }
 
-    public void register(TodoDTO todo, LambdaLogger logger, String correlationId) {
+    public void register(TodoDTO todo, LambdaLogger logger) {
         if (todo != null){
             DTodo dTodo = TodoMapper.toDTodo(todo);
             todoRepository.saveIfNotExist(dTodo, logger);
             return;
         }
-        logger.log("TodoDTO is null RequestId: " + correlationId);
         throw new InvalidMessageException("TodoDTO is null");
     }
 }

@@ -13,6 +13,7 @@ import org.carlosacademic.domain.exceptions.InvalidMessageException;
 import org.carlosacademic.repositories.TodoRepository;
 import org.carlosacademic.repositories.impl.TodoRepositoryImpl;
 import org.carlosacademic.service.TodoService;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,18 +41,23 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResp
                         .get("correlationId")
                         .getStringValue();
 
-                logger.log("Converting the message into TodoDto");
                 TodoDTO todoDTO = getTodoDtoFromMessage(message);
 
-                logger.log("Saving the TodoDto");
-                todoService.register(todoDTO, logger, correlationId);
-            }catch (InvalidMessageException e){
-                logger.log("Invalid Message: " + e.getMessage() + " RequestId: " + correlationId);
+                logger.log(String.format(
+                        "{\"message\":\"saving_todo\",\"todoId\":%d,\"correlationId\":\"%s\",\"status\":\"START\"}",
+                        todoDTO.id(),
+                        correlationId
+                ));
+
+                todoService.register(todoDTO, logger);
+
+                logger.log(String.format(
+                        "{\"message\":\"saving_todo\",\"todoId\":%d,\"correlationId\":\"%s\",\"status\":\"SUCCESS\"}",
+                        todoDTO.id(),
+                        correlationId
+                ));
             }catch (Exception e){
-                logger.log("Unexpected Error: " + e.getMessage()+ " RequestId: " + correlationId);
-                failedMessages.add(new SQSBatchResponse.
-                        BatchItemFailure(message.getMessageId())
-                );
+                handleErrors(e, logger, correlationId);
             }
         }
         return new SQSBatchResponse(failedMessages);
@@ -60,8 +66,26 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResp
     private TodoDTO getTodoDtoFromMessage(SQSEvent.SQSMessage message) {
         try {
             return objectMapper.readValue(message.getBody(), TodoDTO.class);
-        } catch (JsonProcessingException e) {
-            throw new InvalidMessageException("Invalid Json: " + message.getBody());
+        } catch (Exception e) {
+            throw new InvalidMessageException(
+                    String.format("Invalid message body: %s", message.getBody())
+            );
+        }
+    }
+
+    private void handleErrors(Exception e, LambdaLogger logger, String correlationId) {
+        if (e instanceof InvalidMessageException) {
+            logger.log(String.format(
+                    "{\"message\":\"mapping_todo\",\"error\":%s,\"correlationId\":\"%s\",\"status\":\"FAILED\"}",
+                    e.getMessage(),
+                    correlationId
+            ));
+        }else {
+            logger.log(String.format(
+                    "{\"message\":\"unexpected_error\",\"error\":%s,\"correlationId\":\"%s\",\"status\":\"FAILED\"}",
+                    e.getMessage(),
+                    correlationId
+            ));
         }
     }
 }
