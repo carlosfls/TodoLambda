@@ -49,7 +49,7 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResp
                         .getStringValue();
 
                 logger.log("Getting sqs message for processing. Request id: " + correlationId);
-                TodoFullDTO todoFullDTO = getTodoFullFromMessage(message);
+                TodoFullDTO todoFullDTO = getTodoFullFromMessage(message, logger);
 
                 logger.log("Getting the todo from message. Request id: " + correlationId);
                 TodoDTO todoDTO = todoFullDTO.todo();
@@ -71,10 +71,11 @@ public class TodoLambdaRegister implements RequestHandler<SQSEvent, SQSBatchResp
         return new SQSBatchResponse(failedMessages);
     }
 
-    private TodoFullDTO getTodoFullFromMessage(SQSEvent.SQSMessage message) {
+    private TodoFullDTO getTodoFullFromMessage(SQSEvent.SQSMessage message, LambdaLogger logger) {
         try {
             return objectMapper.readValue(message.getBody(), TodoFullDTO.class);
         } catch (Exception e) {
+            logger.log("Error: "+ e.getMessage());
             throw new InvalidMessageException(
                     String.format("Invalid message body: %s", message.getBody())
             );

@@ -13,7 +13,7 @@ public class DUser {
     private String email;
 
     @DynamoDbPartitionKey
-    public int id() {
+    public int getId() {
         return id;
     }
 
@@ -22,7 +22,7 @@ public class DUser {
     }
 
     @DynamoDbAttribute("name")
-    public String name() {
+    public String getName() {
         return name;
     }
 
@@ -31,7 +31,7 @@ public class DUser {
     }
 
     @DynamoDbAttribute("user_name")
-    public String username() {
+    public String getUsername() {
         return username;
     }
 
@@ -40,7 +40,7 @@ public class DUser {
     }
 
     @DynamoDbAttribute("email")
-    public String email() {
+    public String getEmail() {
         return email;
     }
 
