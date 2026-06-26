@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Serverless Application Model (SAM) template describing your function.
+Resources:
+  TodoLambdaRegister:
+    Type: AWS::Serverless::Function
+    Properties:
+      Architectures:
+        - x86_64
+      CodeUri: ./src
+      Description: ''
+      Environment:
+        Variables:
+          USER_TABLE_NAME: DUser
+          TODO_TABLE_NAME: DTodo
+      EphemeralStorage:
+        Size: 512
+      Handler: org.carlosacademic.TodoLambdaRegister::handleRequest
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: /aws/lambda/TodoLambdaRegister
+      MemorySize: 512
+      PackageType: Zip
+      RecursiveLoop: Terminate
+      Runtime: java21
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: Auto
+      SnapStart:
+        ApplyOn: None
+      Tags: {}
+      Timeout: 15
+      Tracing: PassThrough
+      Events:
+        Trigger1Event:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt Trigger1.Arn
+            BatchSize: 10
+  Trigger1:
+    Type: AWS::SQS::Queue
+    Properties:
+      SqsManagedSseEnabled: true
